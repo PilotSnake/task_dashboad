@@ -70,6 +70,14 @@ function stamp() {
   return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;
 }
 
+// 过滤 git 的换行符噪音，并限制日志长度
+function tidy(text, maxLines = 60) {
+  const lines = String(text || '')
+    .split(/\r?\n/)
+    .filter((l) => l.trim() && !/LF will be replaced by CRLF/i.test(l));
+  return (lines.length > maxLines ? lines.slice(-maxLines) : lines).join('\n');
+}
+
 function sendJSON(res, code, obj) {
   const body = Buffer.from(JSON.stringify(obj), 'utf8');
   res.writeHead(code, {
@@ -133,7 +141,7 @@ async function push(payload) {
 
   // 2. 暂存
   const add = await git(['add', '-A']);
-  if (!add.ok) return { ok: false, error: 'git add 失败', log: log.concat(add.err) };
+  if (!add.ok) return { ok: false, error: 'git add 失败', log: log.concat(tidy(add.err)) };
   log.push('[2/4] git add -A 完成');
 
   // 3. 提交（无改动则跳过，但后面仍然尝试推送，方便上次推送失败后重试）
@@ -142,7 +150,7 @@ async function push(payload) {
   if (changed.length) {
     const message = `sync: ${tasks.length} tasks @ ${stamp()}`;
     const commit = await git(['commit', '-m', message]);
-    if (!commit.ok) return { ok: false, error: 'git commit 失败', log: log.concat(commit.err) };
+    if (!commit.ok) return { ok: false, error: 'git commit 失败', log: log.concat(tidy(commit.err)) };
     log.push(`[3/4] 已提交 ${changed.length} 个文件：${message}`);
   } else {
     log.push('[3/4] 工作区没有新改动，跳过提交');
@@ -151,7 +159,7 @@ async function push(payload) {
   // 4. 推送
   const pushed = await git(['push', '-u', REMOTE, BRANCH]);
   if (!pushed.ok) {
-    const detail = [pushed.err, pushed.out].filter(Boolean).join('\n');
+    const detail = tidy([pushed.err, pushed.out].filter(Boolean).join('\n'));
     let hint = '';
     if (/Permission denied \(publickey\)/i.test(detail)) {
       hint = 'SSH 公钥还没登记到 GitHub，或仓库地址不对。';
