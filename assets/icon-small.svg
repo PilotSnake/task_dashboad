@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <!-- 小尺寸专用：去掉投影与内阴影，勾更粗更大，保证 16-24px 下依然清晰 -->
+  <defs>
+    <linearGradient id="bg" x1="26" y1="14" x2="234" y2="246" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#7B76F8"/>
+      <stop offset="0.52" stop-color="#6059E6"/>
+      <stop offset="1" stop-color="#8B5CF6"/>
+    </linearGradient>
+    <clipPath id="clip"><rect x="8" y="8" width="240" height="240" rx="56"/></clipPath>
+  </defs>
+  <rect x="8" y="8" width="240" height="240" rx="56" fill="url(#bg)"/>
+  <g clip-path="url(#clip)">
+    <rect x="8" y="8" width="240" height="240" fill="#ffffff" fill-opacity="0.06"/>
+  </g>
+  <path d="M66 130 L106 170 L190 84" fill="none" stroke="#ffffff" stroke-width="40"
+        stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

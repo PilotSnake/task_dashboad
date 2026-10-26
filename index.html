@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>任务面板 · Task Board</title>
+<link rel="icon" type="image/svg+xml" href="assets/icon.svg">
+<link rel="alternate icon" href="assets/taskboard.ico">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M9 11l3 3 8-8"></path>
+          <path d="M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h9"></path>
+        </svg>
+      </div>
+      <div class="brand-text">
+        <strong>任务面板</strong>
+        <span id="brandDate">—</span>
+      </div>
+    </div>
+
+    <nav class="nav" id="nav">
+      <button class="nav-item is-active" data-view="all">
+        <span class="nav-ico">◧</span><span>全部任务</span><em data-count="all">0</em>
+      </button>
+      <button class="nav-item" data-view="today">
+        <span class="nav-ico">☀</span><span>今天</span><em data-count="today">0</em>
+      </button>
+      <button class="nav-item" data-view="upcoming">
+        <span class="nav-ico">◔</span><span>未来 7 天</span><em data-count="upcoming">0</em>
+      </button>
+      <button class="nav-item" data-view="overdue">
+        <span class="nav-ico">!</span><span>已逾期</span><em data-count="overdue" class="is-danger">0</em>
+      </button>
+      <button class="nav-item" data-view="done">
+        <span class="nav-ico">✓</span><span>已完成</span><em data-count="done">0</em>
+      </button>
+    </nav>
+
+    <div class="side-block">
+      <div class="side-head"><span>优先级</span></div>
+      <div class="chips" id="prioChips"></div>
+    </div>
+
+    <div class="side-block">
+      <div class="side-head"><span>标签</span><button class="mini-btn" id="btnClearTag" hidden>清除</button></div>
+      <div class="chips" id="tagChips"></div>
+    </div>
+
+    <div class="side-foot">
+      <div class="progress">
+        <div class="progress-head"><span>完成进度</span><span id="progressText">0%</span></div>
+        <div class="progress-bar"><i id="progressBar"></i></div>
+      </div>
+      <div class="side-actions">
+        <button class="ghost-btn" id="btnExport">导出</button>
+        <button class="ghost-btn" id="btnImport">导入</button>
+        <button class="ghost-btn icon-only" id="btnTheme" title="切换主题">◐</button>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <div class="topbar-left">
+        <h1 id="viewTitle">全部任务</h1>
+        <p id="viewSub">管理你的日常事项</p>
+      </div>
+      <div class="topbar-right">
+        <label class="search">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <circle cx="11" cy="11" r="7"></circle><path d="M20 20l-3.5-3.5"></path>
+          </svg>
+          <input id="search" type="search" placeholder="搜索任务…  /" autocomplete="off">
+        </label>
+        <div class="seg" id="viewSwitch">
+          <button data-mode="board" class="is-active">看板</button>
+          <button data-mode="list">列表</button>
+        </div>
+        <button class="push-btn" id="btnPush" title="上传到 GitHub">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"
+               stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 15V4"></path>
+            <path d="M7.5 8.5 12 4l4.5 4.5"></path>
+            <path d="M4.5 15v3a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-3"></path>
+          </svg>
+          <span id="pushLabel">上传</span>
+        </button>
+        <button class="primary-btn" id="btnNew">
+          <span>+</span> 新建任务
+        </button>
+      </div>
+    </header>
+
+    <section class="stats" id="stats"></section>
+
+    <div class="stage">
+      <section class="board" id="board"></section>
+      <section class="listview" id="listview" hidden></section>
+    </div>
+  </main>
+</div>
+
+<div class="modal" id="modal" hidden>
+  <div class="modal-card" role="dialog" aria-modal="true">
+    <div class="modal-head">
+      <h2 id="modalTitle">新建任务</h2>
+      <button class="icon-btn" id="modalClose" aria-label="关闭">✕</button>
+    </div>
+    <div class="modal-body">
+      <label class="field">
+        <span>任务标题</span>
+        <input id="fTitle" type="text" placeholder="要做什么？" maxlength="120">
+      </label>
+      <label class="field">
+        <span>备注</span>
+        <textarea id="fNotes" rows="3" placeholder="补充细节、链接、验收标准…"></textarea>
+      </label>
+      <div class="field-row">
+        <div class="field">
+          <span>状态</span>
+          <div class="seg" id="fStatus">
+            <button data-val="todo">待办</button>
+            <button data-val="doing">进行中</button>
+            <button data-val="done">已完成</button>
+          </div>
+        </div>
+        <div class="field">
+          <span>优先级</span>
+          <div class="seg" id="fPriority">
+            <button data-val="high">高</button>
+            <button data-val="medium">中</button>
+            <button data-val="low">低</button>
+          </div>
+        </div>
+      </div>
+      <div class="field-row">
+        <label class="field">
+          <span>截止日期</span>
+          <input id="fDue" type="date">
+        </label>
+        <label class="field">
+          <span>标签</span>
+          <input id="fTags" type="text" placeholder="用逗号分隔，如：工作, 设计">
+        </label>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="ghost-btn danger" id="modalDelete" hidden>删除任务</button>
+      <div class="spacer"></div>
+      <button class="ghost-btn" id="modalCancel">取消</button>
+      <button class="primary-btn" id="modalSave">保存</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="logModal" hidden>
+  <div class="modal-card log-card" role="dialog" aria-modal="true">
+    <div class="modal-head">
+      <h2 id="logTitle">上传详情</h2>
+      <button class="icon-btn" id="logClose" aria-label="关闭">✕</button>
+    </div>
+    <div class="modal-body">
+      <pre class="log-body" id="logBody"></pre>
+    </div>
+    <div class="modal-foot">
+      <div class="spacer"></div>
+      <button class="ghost-btn" id="logOk">知道了</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast" hidden></div>
+<input type="file" id="fileInput" accept=".json,application/json" hidden>
+
+<script src="app.js"></script>
+</body>
+</html>

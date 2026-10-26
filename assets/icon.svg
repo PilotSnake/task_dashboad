@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <defs>
+    <linearGradient id="bg" x1="26" y1="14" x2="234" y2="246" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#7B76F8"/>
+      <stop offset="0.52" stop-color="#6059E6"/>
+      <stop offset="1" stop-color="#8B5CF6"/>
+    </linearGradient>
+    <radialGradient id="shine" cx="0.26" cy="0.14" r="0.8">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.4"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="shade" x1="128" y1="130" x2="128" y2="248" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#2b1f7a" stop-opacity="0"/>
+      <stop offset="1" stop-color="#2b1f7a" stop-opacity="0.38"/>
+    </linearGradient>
+    <filter id="cs" x="-40%" y="-40%" width="180%" height="180%">
+      <feDropShadow dx="0" dy="7" stdDeviation="7" flood-color="#2A2090" flood-opacity="0.42"/>
+    </filter>
+    <clipPath id="clip"><rect x="8" y="8" width="240" height="240" rx="56"/></clipPath>
+  </defs>
+  <rect x="8" y="8" width="240" height="240" rx="56" fill="url(#bg)"/>
+  <g clip-path="url(#clip)">
+    <rect x="8" y="8" width="240" height="240" fill="url(#shine)"/>
+    <rect x="8" y="8" width="240" height="240" fill="url(#shade)"/>
+  </g>
+  <rect x="9.5" y="9.5" width="237" height="237" rx="55" fill="none" stroke="#ffffff" stroke-opacity="0.18" stroke-width="2"/>
+  <path d="M74 132 L110 168 L182 92" fill="none" stroke="#ffffff" stroke-width="30"
+        stroke-linecap="round" stroke-linejoin="round" filter="url(#cs)"/>
+</svg>
