@@ -263,16 +263,69 @@ function createServer() {
 
 /* ------------------------------ 启动 ------------------------------ */
 
-function listen(server, port, tries = 0) {
-  server.once('error', (e) => {
-    if (e.code === 'EADDRINUSE' && tries < 10) {
-      listen(server, port + 1, tries + 1);
-    } else {
+function openBrowser(url) {
+  if (OPEN_BROWSER && process.platform === 'win32') {
+    exec(`start "" "${url}"`, { shell: 'cmd.exe' });
+  }
+}
+
+// 探测某个端口上是不是「本服务」已经在跑
+function probe(port) {
+  return new Promise((resolve) => {
+    const req = http.get(
+      { host: HOST, port, path: '/api/status', timeout: 1200 },
+      (res) => {
+        let body = '';
+        res.setEncoding('utf8');
+        res.on('data', (c) => { body += c; });
+        res.on('end', () => {
+          try {
+            const data = JSON.parse(body);
+            resolve(res.statusCode === 200 && typeof data.branch === 'string');
+          } catch (e) {
+            resolve(false);
+          }
+        });
+      }
+    );
+    req.on('timeout', () => { req.destroy(); resolve(false); });
+    req.on('error', () => resolve(false));
+  });
+}
+
+async function listen(server, port, tries = 0) {
+  let retry = false;
+
+  server.once('error', async (e) => {
+    if (e.code !== 'EADDRINUSE') {
       console.error('[启动失败]', e.message);
       process.exit(1);
     }
+
+    // 端口被占用：先看是不是自己已经跑着了。
+    // 直接复用旧实例，绝不顺延端口——端口不同就是不同 origin，
+    // localStorage 会另开一份，用户会以为任务全丢了。
+    if (await probe(port)) {
+      const url = `http://${HOST}:${port}/`;
+      console.log('');
+      console.log(`  已有实例在 ${port} 端口运行，直接使用它：`);
+      console.log('  ' + url);
+      console.log('');
+      openBrowser(url);
+      process.exit(0);
+    }
+
+    if (tries < 10) {
+      retry = true;
+      listen(server, port + 1, tries + 1);
+    } else {
+      console.error('[启动失败] 端口都被占用了');
+      process.exit(1);
+    }
   });
+
   server.listen(port, HOST, () => {
+    if (retry) return;
     const url = `http://${HOST}:${port}/`;
     console.log('');
     console.log('  任务面板已启动');
@@ -281,9 +334,7 @@ function listen(server, port, tries = 0) {
     console.log('  · 上传按钮会把任务写入 data/tasks.json 并推送到 GitHub');
     console.log('  · 关闭这个窗口即停止服务');
     console.log('');
-    if (OPEN_BROWSER && process.platform === 'win32') {
-      exec(`start "" "${url}"`, { shell: 'cmd.exe' });
-    }
+    openBrowser(url);
   });
 }
 

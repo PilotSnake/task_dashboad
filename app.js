@@ -890,6 +890,14 @@
 
   /* ---------------- boot ---------------- */
   function boot() {
+    // localhost 与 127.0.0.1 是两个不同的 origin，存储不互通。
+    // 统一收敛到 127.0.0.1，避免用户换个写法就"任务全没了"。
+    if (location.hostname === 'localhost') {
+      location.replace('http://127.0.0.1:' + (location.port || '80') +
+        location.pathname + location.search + location.hash);
+      return;
+    }
+
     load();
     applyTheme();
 
